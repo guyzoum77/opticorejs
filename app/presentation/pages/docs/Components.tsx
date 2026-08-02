@@ -35,7 +35,6 @@ import { requestCallsEvent } from "opticore-request-call-event";
 
 const server = http.createServer(app);
 
-// Instruments every request/response cycle: method, status, timing, colorized console output
 server.on("request", (req, res) => {
     requestCallsEvent(req, res, "localhost", 3000, Date.now(), envPath, "en");
 });`;
@@ -56,7 +55,7 @@ export const InvoiceRouter = OpticoreRoutingFactory.routes(
             handler: (ctx: ICustomContext) => InvoiceController.create(ctx.req, ctx.res),
         },
     ],
-    jwtAuthenticator // every route in this collection now requires a valid JWT
+    jwtAuthenticator
 );`;
 
 const exceptionsExample = `import process from "node:process";
@@ -68,7 +67,7 @@ throw new StackTraceError(
     "Could not connect to the database",
     "DatabaseConnectionError",
     HttpStatusCode.UNAUTHORIZED,
-    true // isOperational
+    true
 );
 
 // 2. Process-wide safety net, wired once at boot
