@@ -15,6 +15,8 @@ import { DocsSidebar } from "./DocsSidebar";
 import { SyntaxCodeBlock } from "./SyntaxCodeBlock";
 import { TreeBlock } from "./TreeBlock";
 
+const scaffoldCmd = `npx create-feature-module`;
+
 const cartPresenterInterface = `import { CartResponseDto } from "../../dtos/cart.dto";
 
 export interface ICartPresenter {
@@ -227,32 +229,66 @@ const server = app.onStartServer(
 app.onListeningOnServerEvent(server!);
 app.onRequestOnServerEvent(server!);`;
 
-const loggerExample = `import { LoggerCore, loggerConfig } from "opticore-logger";
-import type { ILoggerConfig } from "opticore-logger";
+const devtoolsCli = `# Scaffold a brand-new OpticoreJS project from a starter template
+npx opticore-installer
 
-const logger = new LoggerCore(loggerConfig(envPath) as ILoggerConfig);
+# Generate a feature module inside an existing project
+npx create-feature-module
 
-logger.info("Server started", { port: 3000 });
-logger.warn("Deprecated endpoint hit", { path: "/v1/users" });
-logger.error("Unhandled exception", { stack: err.stack });`;
+# Run & monitor long-lived processes with a live dashboard (http://localhost:3000)
+npx app-manager`;
+
+const hotReloadExample = `import { createServer } from "http";
+import { HotReloadWatcher } from "opticore-watcher";
+
+const server = createServer(app);
+
+const hotReload = new HotReloadWatcher({
+    rootDir: process.cwd(),
+    watchExtensions: [".ts", ".json", ".env"],
+    hotReloadExtensions: [".json", ".env"], // reloaded in-process, no restart
+    debounceMs: 300,
+});
+
+await hotReload.attach(server);
+server.listen(3000);`;
+
+const loggerExample = `import { LoggerCore } from "opticore-logger";
+import { loggerConfig } from "opticore-webapp-core";
+
+const logger = new LoggerCore(loggerConfig(envPath));
+
+logger.info({ title: "Server started", message: "Listening on port 3000" });
+logger.warn({ title: "Deprecated route", message: "GET /v1/users is deprecated" });
+logger.error({ title: "Unhandled exception", message: err.message, stackTrace: err.stack });`;
 
 const envExample = `import { getEnvironmentValue, IEnvVariables } from "opticore-env-access";
 import { envPath } from "opticore-webapp";
 
 const env: IEnvVariables = getEnvironmentValue(envPath);
 
-console.log(env.port);          // typed: number
+console.log(env.appPort);       // typed: string
 console.log(env.defaultLocal);  // typed: string`;
 
-const validationExample = `import { IsString, IsInt, Min } from "@opticore/validation";
+const validationExample = `import { Validator, ValidationResultInterface } from "opticore-validator";
+import { ResponseHandler, HttpStatusCode } from "opticore-http-response";
 
-export class CreateOrderDto {
-  @IsString()
-  customerId!: string;
+const schema = {
+    email: [
+        { rule: "required", message: "Email is required" },
+        { rule: "email", message: "Must be a valid email address" },
+    ],
+    password: [
+        { rule: "required" },
+        { rule: "minLength", args: [8], message: "At least 8 characters" },
+        { rule: "containsUppercase", message: "Add at least one uppercase letter" },
+    ],
+};
 
-  @IsInt()
-  @Min(1)
-  quantity!: number;
+const errors: ValidationResultInterface = new Validator(schema).validate(req.body);
+
+if (Object.keys(errors).length) {
+    return ResponseHandler.error("Validation failed", HttpStatusCode.BAD_REQUEST, errors);
 }`;
 
 const TWEAK_DEFAULTS = { accent: "#f59042", theme: "dark", density: "comfortable" };
@@ -267,13 +303,22 @@ export function Features() {
         { id: "first-module", label: t.sb_first },
         { id: "structure", label: t.sb_struct },
         { id: "running", label: t.sb_running },
+        { id: "devtools", label: t.sb_devtools },
         { id: "logger", label: t.sb_logger },
         { id: "environment", label: t.sb_environment },
         { id: "validation", label: t.sb_validation },
     ];
 
     useEffect(() => {
-        const ids = ["first-module", "structure", "running", "logger", "environment", "validation"];
+        const ids = [
+            "first-module",
+            "structure",
+            "running",
+            "devtools",
+            "logger",
+            "environment",
+            "validation",
+        ];
         const obs = new IntersectionObserver(
             (entries) => {
                 const visible = entries
@@ -324,6 +369,7 @@ export function Features() {
                         {t.docs_first_module}
                     </h2>
                     <p>{t.docs_first_module_p}</p>
+                    <SyntaxCodeBlock tabs={["npx"]} codes={[scaffoldCmd]} lang="sh" />
 
                     <p>{t.docs_presenter_p}</p>
                     <SyntaxCodeBlock
@@ -369,7 +415,7 @@ export function Features() {
                         <p>
                             <strong>{t.docs_callout_2_b}</strong>
                             {t.docs_callout_2_a}
-                            <code>opticore check</code>
+                            <code>create-feature-module</code>
                             {t.docs_callout_2_c}
                         </p>
                     </div>
@@ -384,6 +430,14 @@ export function Features() {
                         <code>GET /cart</code>
                         {t.docs_running_after_b}
                     </p>
+
+                    <h2 id="devtools" className="major">
+                        {t.feat_devtools_h}
+                    </h2>
+                    <p>{t.feat_devtools_p}</p>
+                    <SyntaxCodeBlock tabs={["shell"]} codes={[devtoolsCli]} lang="sh" />
+                    <p>{t.feat_devtools_p2}</p>
+                    <SyntaxCodeBlock tabs={["server.ts"]} codes={[hotReloadExample]} lang="ts" />
 
                     <h2 id="logger" className="major">
                         {t.feat_logger_h}

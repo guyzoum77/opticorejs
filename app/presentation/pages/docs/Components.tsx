@@ -13,72 +13,89 @@ import {
 import { DocsSidebar } from "./DocsSidebar";
 import { SyntaxCodeBlock } from "./SyntaxCodeBlock";
 
-const decoratorsExample = `import { Module, UseCase, Inject, Controller } from "@opticore/core";
+const middlewaresExample = `import { APIGateway, BaseMiddleware, LoggingMiddleware, RateLimitMiddleware } from "opticore-api-gateway";
 
-@Module({ entities: [Order], useCases: [ConfirmOrder] })
-export class OrderModule {}
-
-@UseCase()
-export class ConfirmOrder {
-  constructor(@Inject("OrderRepository") private repo: OrderRepository) {}
+class RequestIdMiddleware extends BaseMiddleware {
+    handle() {
+        return (req, res, next) => {
+            req.headers["x-request-id"] ??= crypto.randomUUID();
+            next();
+        };
+    }
 }
 
-@Controller("/orders")
-export class OrderController {
-  constructor(@Inject(ConfirmOrder) private confirmOrder: ConfirmOrder) {}
-}`;
+const gateway = new APIGateway({ port: 3000, services: [], routes: [] });
 
-const interceptorsExample = `import type { Interceptor, ExecutionContext } from "@opticore/core";
+gateway.addMiddleware(new LoggingMiddleware("info").handle());
+gateway.addMiddleware(new RateLimitMiddleware(100, 60000).handle());
+gateway.addMiddleware(new RequestIdMiddleware().handle());`;
 
-export class LoggingInterceptor implements Interceptor {
-  async intercept(ctx: ExecutionContext, next: () => Promise<unknown>) {
-    const start = Date.now();
-    const result = await next();
-    console.log(\`\${ctx.handler} completed in \${Date.now() - start}ms\`);
-    return result;
-  }
-}`;
+const interceptorsExample = `import http from "node:http";
+import { requestCallsEvent } from "opticore-request-call-event";
 
-const guardsExample = `import type { Guard, Request } from "@opticore/core";
+const server = http.createServer(app);
 
-export class AuthGuard implements Guard {
-  canActivate(req: Request): boolean {
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token) throw new UnauthorizedException("Missing bearer token");
-    return verifyJwt(token);
-  }
-}`;
+// Instruments every request/response cycle: method, status, timing, colorized console output
+server.on("request", (req, res) => {
+    requestCallsEvent(req, res, "localhost", 3000, Date.now(), envPath, "en");
+});`;
 
-const pipesExample = `import type { Pipe } from "@opticore/core";
-import { CreateOrderDto } from "../dtos/create-order.dto";
-import { validate } from "@opticore/validation";
+const guardsExample = `import { OpticoreRoutingFactory, ICustomContext, TAuthenticatorFunction } from "opticore-router";
+import passport from "passport";
 
-export class ValidationPipe implements Pipe {
-  async transform(value: unknown) {
-    const dto = Object.assign(new CreateOrderDto(), value);
-    const errors = await validate(dto);
-    if (errors.length) throw new BadRequestException(errors);
-    return dto;
-  }
-}`;
+const jwtAuthenticator: TAuthenticatorFunction<ICustomContext> =
+    passport.authenticate("jwt", { session: false });
+
+export const InvoiceRouter = OpticoreRoutingFactory.routes(
+    InvoiceController,
+    [
+        {
+            path: "/invoices",
+            method: "post",
+            middlewares: [],
+            handler: (ctx: ICustomContext) => InvoiceController.create(ctx.req, ctx.res),
+        },
+    ],
+    jwtAuthenticator // every route in this collection now requires a valid JWT
+);`;
+
+const exceptionsExample = `import process from "node:process";
+import { StackTraceError, ServerListenEventError, CEvent as event } from "opticore-catch-exception-error";
+import { HttpStatusCode } from "opticore-http-response";
+
+// 1. Typed, HTTP-aware errors thrown anywhere in your infrastructure layer
+throw new StackTraceError(
+    "Could not connect to the database",
+    "DatabaseConnectionError",
+    HttpStatusCode.UNAUTHORIZED,
+    true // isOperational
+);
+
+// 2. Process-wide safety net, wired once at boot
+const serverListenEvent = new ServerListenEventError("en");
+
+process.on(event.uncaughtException, (error) => serverListenEvent.uncaughtException(error));
+process.on(event.unhandledRejection, (reason, promise) =>
+    serverListenEvent.unhandledRejection(reason, promise)
+);`;
 
 const TWEAK_DEFAULTS = { accent: "#f59042", theme: "dark", density: "comfortable" };
 
 export function Components() {
     const [searchOpen, setSearchOpen] = useState(false);
-    const [activeId, setActiveId] = useState("decorators");
+    const [activeId, setActiveId] = useState("middlewares");
     const [, , t] = useLang();
     useCmdK(() => setSearchOpen(true));
 
     const TOC = [
-        { id: "decorators", label: t.sb_decorators },
+        { id: "middlewares", label: t.sb_middlewares },
         { id: "interceptors", label: t.sb_interceptors },
         { id: "guards", label: t.sb_guards },
-        { id: "pipes", label: t.sb_pipes },
+        { id: "exceptions", label: t.sb_exceptions },
     ];
 
     useEffect(() => {
-        const ids = ["decorators", "interceptors", "guards", "pipes"];
+        const ids = ["middlewares", "interceptors", "guards", "exceptions"];
         const obs = new IntersectionObserver(
             (entries) => {
                 const visible = entries
@@ -125,18 +142,18 @@ export function Components() {
                     </p>
                     <h1 style={{ color: "var(--accent)" }}>{t.comp_title}</h1>
 
-                    <h2 id="decorators" className="major">
-                        {t.comp_decorators_h}
+                    <h2 id="middlewares" className="major">
+                        {t.comp_middlewares_h}
                     </h2>
-                    <p>{t.comp_decorators_p}</p>
-                    <SyntaxCodeBlock tabs={["decorators.ts"]} codes={[decoratorsExample]} />
+                    <p>{t.comp_middlewares_p}</p>
+                    <SyntaxCodeBlock tabs={["middlewares.ts"]} codes={[middlewaresExample]} />
 
                     <h2 id="interceptors" className="major">
                         {t.comp_interceptors_h}
                     </h2>
                     <p>{t.comp_interceptors_p}</p>
                     <SyntaxCodeBlock
-                        tabs={["logging.interceptor.ts"]}
+                        tabs={["requestCallsEvent.ts"]}
                         codes={[interceptorsExample]}
                     />
 
@@ -144,13 +161,13 @@ export function Components() {
                         {t.comp_guards_h}
                     </h2>
                     <p>{t.comp_guards_p}</p>
-                    <SyntaxCodeBlock tabs={["auth.guard.ts"]} codes={[guardsExample]} />
+                    <SyntaxCodeBlock tabs={["invoice.router.ts"]} codes={[guardsExample]} />
 
-                    <h2 id="pipes" className="major">
-                        {t.comp_pipes_h}
+                    <h2 id="exceptions" className="major">
+                        {t.comp_exceptions_h}
                     </h2>
-                    <p>{t.comp_pipes_p}</p>
-                    <SyntaxCodeBlock tabs={["validation.pipe.ts"]} codes={[pipesExample]} />
+                    <p>{t.comp_exceptions_p}</p>
+                    <SyntaxCodeBlock tabs={["errors.ts"]} codes={[exceptionsExample]} />
 
                     <div className="page-foot">
                         <a href="/docs/config" style={{ textAlign: "left" }}>

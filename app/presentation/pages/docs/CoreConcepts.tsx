@@ -2,6 +2,7 @@ import { type MouseEvent, useEffect, useState } from "react";
 import { useCmdK } from "~/application/hooks/useCmdK";
 import { useLang } from "~/application/hooks/useLang";
 import { useTweaks } from "~/application/hooks/useTweaks";
+import { Icon } from "~/presentation/components/shared/Icon";
 import { SearchDialog } from "~/presentation/components/shared/SearchDialog";
 import { TopNav } from "~/presentation/components/shared/TopNav";
 import {
@@ -13,78 +14,125 @@ import {
 import { DocsSidebar } from "./DocsSidebar";
 import { SyntaxCodeBlock } from "./SyntaxCodeBlock";
 
-const entityExample = `import { Entity } from "@opticore/core";
+const entityExample = `export class InvoiceEntity {
+  private readonly _id: string;
+  private _amount: number;
+  private _updatedAt: Date;
 
-@Entity()
-export class Order {
-  constructor(
-    public readonly id: string,
-    public readonly items: OrderItem[],
-    private status: "pending" | "confirmed" | "shipped"
-  ) {}
-
-  confirm(): void {
-    if (this.status !== "pending") throw new Error("Order already confirmed");
-    this.status = "confirmed";
+  constructor(id: string, amount: number, updatedAt: Date = new Date()) {
+    this._id = id;
+    this._amount = amount;
+    this._updatedAt = updatedAt;
+    this.validate();
   }
 
-  get isShippable(): boolean {
-    return this.status === "confirmed" && this.items.length > 0;
+  get id(): string { return this._id; }
+  get amount(): number { return this._amount; }
+
+  public touch(): void {
+    this._updatedAt = new Date();
   }
-}`;
 
-const useCaseExample = `import { UseCase, Inject } from "@opticore/core";
-import type { OrderRepository } from "../ports/order.repository";
-
-@UseCase()
-export class ConfirmOrder {
-  constructor(@Inject("OrderRepository") private repo: OrderRepository) {}
-
-  async execute({ orderId }: { orderId: string }) {
-    const order = await this.repo.findById(orderId);
-    if (!order) throw new Error("Order not found");
-    order.confirm();
-    await this.repo.save(order);
-    return { confirmed: true };
+  private validate(): void {
+    if (!this._id?.trim()) {
+        throw new Error("[InvoiceEntity] id must not be empty.");
+    }
+    if (this._amount < 0) {
+        throw new Error("[InvoiceEntity] amount must not be negative.");
+    }
   }
 }`;
 
-const portExample = `// Port (application layer)
-export interface OrderRepository {
-  findById(id: string): Promise<Order | null>;
-  save(order: Order): Promise<void>;
+const useCaseExample = `import { IInvoiceRepository } from "../ports/repositories/invoice.repository.interface";
+import { InvoiceDtoMapper, InvoiceResponseDto } from "../dtos/invoice.dto";
+
+export class InvoiceUseCase {
+  constructor(private readonly repository: IInvoiceRepository) {}
+
+  async findAll(): Promise<InvoiceResponseDto[]> {
+    const entities = await this.repository.findAll();
+    return InvoiceDtoMapper.toResponseList(entities);
+  }
+
+  async findById(id: string): Promise<InvoiceResponseDto | null> {
+    const entity = await this.repository.findById(id);
+    return entity ? InvoiceDtoMapper.toResponse(entity) : null;
+  }
+}`;
+
+const portExample = `
+export interface IInvoiceRepository {
+  findAll(): Promise<InvoiceEntity[]>;
+  findById(id: string): Promise<InvoiceEntity | null>;
+  create(entity: InvoiceEntity): Promise<InvoiceEntity>;
 }
 
-// Adapter (infrastructure layer)
-import { PrismaClient } from "@prisma/client";
+import { QueryBuilder, Sql } from "opticore-postgres";
 
-export class PrismaOrderRepository implements OrderRepository {
-  constructor(private db: PrismaClient) {}
+export class InvoiceRepository implements IInvoiceRepository {
+  constructor(private readonly sql: Sql) {}
 
-  async findById(id: string) {
-    const row = await this.db.order.findUnique({ where: { id } });
-    return row ? mapToDomain(row) : null;
+  async findAll(): Promise<InvoiceEntity[]> {
+    const rows = await new QueryBuilder("invoices")
+      .orderBy("createdAt", "DESC")
+      .execute(this.sql);
+    return rows.map((r: any) => new InvoiceEntity(r.id, r.amount, r.updatedAt));
   }
 
-  async save(order: Order) {
-    await this.db.order.upsert({ where: { id: order.id }, ...mapToRow(order) });
+  async findById(id: string): Promise<InvoiceEntity | null> {
+    const row = await new QueryBuilder("invoices")
+        .where("id", id)
+        .first(this.sql);
+    return row ? new InvoiceEntity(row.id, row.amount, row.updatedAt) : null;
   }
 }`;
 
-const diExample = `import { Module } from "@opticore/core";
-import { ConfirmOrder } from "./use-cases/confirm-order";
-import { Order } from "./entities/order";
-import { PrismaOrderRepository } from "./infra/prisma-order.repository";
+const routingExample = `
+import { OpticoreRoutingFactory, ICustomContext, IMultipleRouteDefinition } from "opticore-router";
+import { InvoiceController } from "../adapters/controllers/invoice.controller";
 
-@Module({
-  entities: [Order],
-  useCases: [ConfirmOrder],
-  providers: [
-    { token: "OrderRepository", useClass: PrismaOrderRepository },
+export const InvoiceHandlerRouter: () => IMultipleRouteDefinition = () =>
+  OpticoreRoutingFactory.routes(InvoiceController, [
+    {
+        path: "/invoices",
+        method: "get",
+        middlewares: [],
+        handler: (ctx: ICustomContext) => InvoiceController.findAll(ctx.req, ctx.res)
+    },
+    {
+        path: "/invoices/:id",
+        method: "get",
+        middlewares: [],
+        handler: (ctx: ICustomContext) => InvoiceController.findById(ctx.req, ctx.res)
+    },
+  ]);
+
+import { TFeatureRoutes } from "opticore-router";
+
+export const InvoiceRouter: TFeatureRoutes = {
+  routes: [
+     {
+        path: InvoiceHandlerRouter().path,
+        handler: InvoiceHandlerRouter().handler
+     }
   ],
-  exports: [ConfirmOrder],
-})
-export class OrderModule {}`;
+};`;
+
+const diExample = `import { SContainer, ContainerCore } from "opticore-dependency-inject";
+import { InvoiceRepository } from "./infrastructure/adapters/repositories/invoice.repository";
+import { InvoiceUseCase } from "./application/use-cases/invoice.usecase";
+
+const container = new SContainer("en", [
+  { key: "InvoiceRepository", factory: () => new InvoiceRepository(sql), scope: "singleton" },
+  {
+    key: "InvoiceUseCase",
+    factory: (c?: ContainerCore) => new InvoiceUseCase(c!.resolve("InvoiceRepository")),
+    scope: "singleton",
+  },
+]);
+
+const invoiceUseCase = container.getService<InvoiceUseCase>("InvoiceUseCase");
+container.listDependencies();`;
 
 const TWEAK_DEFAULTS = { accent: "#f59042", theme: "dark", density: "comfortable" };
 
@@ -98,11 +146,12 @@ export function CoreConcepts() {
         { id: "entities", label: t.sb_entities },
         { id: "use-cases", label: t.sb_uc },
         { id: "ports", label: t.sb_ports },
+        { id: "routing", label: t.sb_routing },
         { id: "di", label: t.sb_di },
     ];
 
     useEffect(() => {
-        const ids = ["entities", "use-cases", "ports", "di"];
+        const ids = ["entities", "use-cases", "ports", "routing", "di"];
         const obs = new IntersectionObserver(
             (entries) => {
                 const visible = entries
@@ -148,33 +197,51 @@ export function CoreConcepts() {
                         {t.crumb} <span>›</span> {t.sb_concepts}
                     </p>
                     <h1 style={{ color: "var(--accent)" }}>{t.cc_title}</h1>
+                    <p className="lede">{t.cc_lede}</p>
 
                     <h2 id="entities" className="major">
                         {t.cc_entities_h}
                     </h2>
                     <p>{t.cc_entities_p}</p>
-                    <SyntaxCodeBlock tabs={["order.entity.ts"]} codes={[entityExample]} />
+                    <SyntaxCodeBlock tabs={["invoice.entity.ts"]} codes={[entityExample]} />
 
                     <h2 id="use-cases" className="major">
                         {t.cc_uc_h}
                     </h2>
                     <p>{t.cc_uc_p}</p>
-                    <SyntaxCodeBlock
-                        tabs={["confirm-order.use-case.ts"]}
-                        codes={[useCaseExample]}
-                    />
+                    <SyntaxCodeBlock tabs={["invoice.usecase.ts"]} codes={[useCaseExample]} />
 
                     <h2 id="ports" className="major">
                         {t.cc_ports_h}
                     </h2>
                     <p>{t.cc_ports_p}</p>
-                    <SyntaxCodeBlock tabs={["order.repository.ts"]} codes={[portExample]} />
+                    <SyntaxCodeBlock
+                        tabs={["invoice.repository.interface.ts", "invoice.repository.ts"]}
+                        codes={[portExample, portExample]}
+                    />
+
+                    <h2 id="routing" className="major">
+                        {t.cc_routing_h}
+                    </h2>
+                    <p>{t.cc_routing_p}</p>
+                    <SyntaxCodeBlock
+                        tabs={["invoice.router.handler.ts"]}
+                        codes={[routingExample]}
+                    />
 
                     <h2 id="di" className="major">
                         {t.cc_di_h}
                     </h2>
                     <p>{t.cc_di_p}</p>
-                    <SyntaxCodeBlock tabs={["order.module.ts"]} codes={[diExample]} />
+                    <SyntaxCodeBlock tabs={["container.ts"]} codes={[diExample]} />
+
+                    <div className="callout">
+                        <Icon name="info" size={20} className="icon" />
+                        <p>
+                            <strong>{t.cc_legacy_b}</strong>
+                            {t.cc_legacy}
+                        </p>
+                    </div>
 
                     <div className="page-foot">
                         <a href="/docs" style={{ textAlign: "left" }}>

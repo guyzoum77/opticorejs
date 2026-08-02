@@ -122,7 +122,7 @@ export function Docs() {
                     <p>{t.intro_p6_b}</p>
 
                     <div className="callout">
-                        <Icon name="spark" size={20} className="icon" />
+                        <Icon name="info" size={20} className="icon" />
                         <p>
                             <strong>{t.intro_callout_b}</strong>
                             {t.intro_callout}

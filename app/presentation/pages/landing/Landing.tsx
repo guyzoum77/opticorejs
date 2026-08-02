@@ -346,7 +346,7 @@ export function Landing() {
                 <div className="trust-inner">
                     <span className="label">{t.trust_label}</span>
                     <div className="marks">
-                        <span>SUNU DigiTech</span>
+                        {/*<span>SUNU DigiTech</span>*/}
                         {/*<span>Northwind</span>*/}
                         {/*<span>Voltcore</span>*/}
                         {/*<span>Helios Labs</span>*/}
@@ -571,7 +571,7 @@ export function Landing() {
                 <div className="stats-inner">
                     <div className="stat">
                         <div className="num">
-                            184<em>ms</em>
+                            74<em>ms</em>
                         </div>
                         <div className="lbl">{t.stat_1}</div>
                     </div>

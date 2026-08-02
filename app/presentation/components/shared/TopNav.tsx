@@ -3,6 +3,7 @@ import { useLang } from "~/application/hooks/useLang";
 import { useTheme } from "~/application/hooks/useTheme";
 import { Icon } from "./Icon";
 import { LangSwitch } from "./LangSwitch";
+import { VersionSwitch } from "./VersionSwitch";
 
 interface TopNavProps {
     active: "home" | "docs";
@@ -16,13 +17,15 @@ export function TopNav({ active, onSearch }: TopNavProps) {
     return (
         <header className="nav">
             <div className="nav-inner">
-                <Link to="/" viewTransition className="brand">
-                    <img src="/assets/opticorejs-logo.png" alt="" className="brand-logo" />
-                    <span className="brand-name">
-                        OptiCore<b>JS</b>
-                    </span>
-                    <span className="brand-version">{t.app_version}</span>
-                </Link>
+                <div className="brand">
+                    <Link to="/" viewTransition className="brand-link">
+                        <img src="/assets/opticorejs-logo.png" alt="" className="brand-logo" />
+                        <span className="brand-name">
+                            OptiCore<b>JS</b>
+                        </span>
+                    </Link>
+                    <VersionSwitch />
+                </div>
 
                 <nav className="nav-links">
                     <Link

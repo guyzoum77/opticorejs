@@ -13,34 +13,123 @@ import {
 import { DocsSidebar } from "./DocsSidebar";
 import { SyntaxCodeBlock } from "./SyntaxCodeBlock";
 
-const httpExample = `import { createHandler } from "@opticore/http";
-import { ConfirmOrder } from "../application/use-cases/confirm-order";
+const httpExample = `import { Request, Response } from "express";
+import { ResponseHandler, HttpStatusCode } from "opticore-http-response";
 
-export const confirmOrderHandler = createHandler(async (req, res) => {
-  const useCase = req.container.resolve(ConfirmOrder);
-  const result = await useCase.execute({ orderId: req.params.id });
-  res.json(result);
-});`;
+export class InvoiceController {
+    static async findById(req: Request, res: Response) {
+        try {
+            const result = await invoiceUseCase.findById(req.params.id);
+            if (!result) {
+                return ResponseHandler.error(\`Not found: \${req.params.id}\`, HttpStatusCode.NOT_FOUND);
+            }
+            return ResponseHandler.success(result, "success", HttpStatusCode.OK);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Internal server error";
+            return ResponseHandler.error(message, HttpStatusCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+}`;
 
-const postgresExample = `import { OptiCoreMySQLDriver } from "opticore-mysqldb";
-import { getEnvironmentValue } from "opticore-env-access";
+const postgresExample = `import { PostgresCore, QueryBuilder } from "opticore-postgres";
 
-const env = getEnvironmentValue(envPath);
-const db = new OptiCoreMySQLDriver(env, env.defaultLocal);`;
+const db = new PostgresCore(
+    process.env.DATA_BASE_USER!,
+    process.env.DATA_BASE_PASSWORD!,
+    process.env.DATA_BASE_HOST!,
+    Number(process.env.DATA_BASE_PORT),
+    "en",
+    process.env.DATA_BASE_NAME!
+);
 
-const redisExample = `import { RedisAdapter } from "@opticore/redis";
+db.connection();
+const sql = db.getConnection();
 
-const cache = new RedisAdapter({ host: "localhost", port: 6379 });
+const activeAdults = await new QueryBuilder("users")
+    .where("status", "active")
+    .where("age", ">=", 18)
+    .orderBy("createdAt", "DESC")
+    .limit(20)
+    .execute(sql);`;
 
-await cache.set("user:42", JSON.stringify(user), 3600);
-const hit = await cache.get("user:42");`;
+const mysqlExample = `import { OptiCoreMySQLDriver } from "opticore-mysqldb";
 
-const queueExample = `import { QueueAdapter } from "@opticore/queue";
+const db = new OptiCoreMySQLDriver(
+    { DB_HOST: "localhost", DB_USER: "root", DB_PASSWORD: "password", DB_NAME: "app" },
+    "en"
+);
 
-const queue = new QueueAdapter("email-notifications");
+db.connect();
 
-await queue.publish({ to: "user@example.com", template: "welcome" });
-queue.subscribe(async (job) => { await sendEmail(job.data); });`;
+const { results } = await db.query({ sql: "SELECT * FROM users WHERE id = ?", values: [1] });
+await db.insert("users", { name: "Alice", email: "alice@example.com" });`;
+
+const mongoExample = `import { MongoClient } from "mongodb";
+import { QueryBuilder } from "opticore-mongodb";
+
+const client = await MongoClient.connect(connectionUri);
+const database = client.db("myDatabase");
+
+const activeAdults = await new QueryBuilder("users")
+    .where("status", "active")
+    .where("age", "gte", 18)
+    .sort({ createdAt: -1 })
+    .limit(20)
+    .execute(database);`;
+
+const ormOrchestratorExample = `npx orm-orchestrator init         # pick Prisma / TypeORM / Drizzle / MikroORM / Sequelize
+npx orm-orchestrator make:model   # interactive model + relations wizard
+npx orm-orchestrator list         # list every model defined for the active ORM`;
+
+const cacheExample = `import { HttpCacheFactory, IHttpCacheService } from "opticore-cache";
+
+const httpCache: IHttpCacheService = HttpCacheFactory.create("external-api", {
+    storageType: "disk",   // "memory" | "disk" | "hybrid"
+    diskDir: "src/core/cache",
+    defaultTTL: 60000,
+    maxSize: 500,
+});
+
+const post = await httpCache.getWithCache(\`https://api.example.com/posts/\${id}\`);
+console.log(post._metadata.source); // "cache" | "api"
+
+await httpCache.invalidateCache("/posts/*");`;
+
+const gatewayExample = `import { APIGateway, AuthMiddleware } from "opticore-api-gateway";
+
+const gateway = new APIGateway({
+    port: 3000,
+    loadBalancer: "round-robin",
+    services: [
+        { name: "user-service", url: "http://localhost:4001", healthCheck: "/health" },
+    ],
+    routes: [
+        {
+            path: "/users",
+            method: "get",
+            target: "http://localhost:4001",
+            serviceName: "user-service",
+            middlewares: [new AuthMiddleware(["my-secret-key"])],
+            circuitBreaker: { failureThreshold: 5, resetTimeout: 30000, halfOpenMaxAttempts: 2 },
+        },
+    ],
+});
+
+await gateway.start();`;
+
+const securityExample = `import fs from "fs";
+import {
+    loaderTranslationFile,
+    SAsymmetricCryptionDataWithPublicRSAKey,
+} from "opticore-asymmetric-cryption";
+
+loaderTranslationFile("en");
+
+const privateKey = fs.readFileSync("keys/private.pem", "utf8");
+const publicKey = fs.readFileSync("keys/public.pem", "utf8");
+
+const crypto = new SAsymmetricCryptionDataWithPublicRSAKey("en", ".env");
+const signature = crypto.verifyPublicRSAKey(privateKey, publicKey, "payload to sign");`;
 
 const TWEAK_DEFAULTS = { accent: "#f59042", theme: "dark", density: "comfortable" };
 
@@ -52,13 +141,14 @@ export function Helpers() {
 
     const TOC = [
         { id: "http", label: t.sb_http },
-        { id: "postgres", label: t.sb_postgres },
-        { id: "redis", label: t.sb_redis },
-        { id: "queue", label: t.sb_queue },
+        { id: "databases", label: t.sb_databases },
+        { id: "cache", label: t.sb_cache },
+        { id: "gateway", label: t.sb_gateway },
+        { id: "security", label: t.sb_security },
     ];
 
     useEffect(() => {
-        const ids = ["http", "postgres", "redis", "queue"];
+        const ids = ["http", "databases", "cache", "gateway", "security"];
         const obs = new IntersectionObserver(
             (entries) => {
                 const visible = entries
@@ -109,25 +199,36 @@ export function Helpers() {
                         {t.helpers_http_h}
                     </h2>
                     <p>{t.helpers_http_p}</p>
-                    <SyntaxCodeBlock tabs={["confirm-order.handler.ts"]} codes={[httpExample]} />
+                    <SyntaxCodeBlock tabs={["invoice.controller.ts"]} codes={[httpExample]} />
 
-                    <h2 id="postgres" className="major">
-                        {t.helpers_postgres_h}
+                    <h2 id="databases" className="major">
+                        {t.sb_databases}
                     </h2>
                     <p>{t.helpers_postgres_p}</p>
-                    <SyntaxCodeBlock tabs={["mysql.driver.ts"]} codes={[postgresExample]} />
+                    <SyntaxCodeBlock
+                        tabs={["opticore-postgres", "opticore-mysqldb", "opticore-mongodb"]}
+                        codes={[postgresExample, mysqlExample, mongoExample]}
+                    />
+                    <p>{t.helpers_orm_p}</p>
+                    <SyntaxCodeBlock tabs={["shell"]} codes={[ormOrchestratorExample]} lang="sh" />
 
-                    <h2 id="redis" className="major">
-                        {t.helpers_redis_h}
+                    <h2 id="cache" className="major">
+                        {t.sb_cache}
                     </h2>
                     <p>{t.helpers_redis_p}</p>
-                    <SyntaxCodeBlock tabs={["redis.adapter.ts"]} codes={[redisExample]} />
+                    <SyntaxCodeBlock tabs={["cache.ts"]} codes={[cacheExample]} />
 
-                    <h2 id="queue" className="major">
-                        {t.helpers_queue_h}
+                    <h2 id="gateway" className="major">
+                        {t.sb_gateway}
                     </h2>
                     <p>{t.helpers_queue_p}</p>
-                    <SyntaxCodeBlock tabs={["queue.adapter.ts"]} codes={[queueExample]} />
+                    <SyntaxCodeBlock tabs={["gateway.ts"]} codes={[gatewayExample]} />
+
+                    <h2 id="security" className="major">
+                        {t.sb_security}
+                    </h2>
+                    <p>{t.helpers_security_p}</p>
+                    <SyntaxCodeBlock tabs={["sign.ts"]} codes={[securityExample]} />
 
                     <div className="page-foot">
                         <a href="/docs/features" style={{ textAlign: "left" }}>

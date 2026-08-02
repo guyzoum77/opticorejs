@@ -35,8 +35,8 @@
 }
 
 [data-theme="light"] {
-    --bg: #fbf9f5;
-    --bg-elev: #ffffff;
+    --bg: #ffffff;
+    --bg-elev: #fbf9f5;
     --bg-elev-2: #f4f1ea;
     --bg-code: color(srgb-linear 0.39 0.27 0.21 / 0.16);
     --line: rgba(20, 20, 40, 0.08);
@@ -138,6 +138,11 @@ button {
     font-weight: 600;
     letter-spacing: -0.01em;
 }
+.brand-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 .brand-logo {
     width: 32px;
     height: 32px;
@@ -152,13 +157,38 @@ button {
     font-weight: 600;
 }
 .brand-version {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    margin-left: 4px;
+}
+.brand-version-select {
+    appearance: none;
+    -webkit-appearance: none;
     font-family: var(--font-mono);
     font-size: 11px;
-    padding: 2px 6px;
+    padding: 2px 20px 2px 6px;
     border: 1px solid var(--line-strong);
     border-radius: 4px;
+    background: transparent;
     color: var(--fg-muted);
-    margin-left: 4px;
+    cursor: pointer;
+}
+.brand-version-select:hover {
+    border-color: var(--accent);
+    color: var(--fg);
+}
+.brand-version-select:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+.brand-version-chevron {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%) rotate(90deg);
+    pointer-events: none;
+    color: var(--fg-muted);
 }
 .nav-links {
     display: flex;
@@ -302,13 +332,13 @@ button {
     margin: 0 0 24px;
     text-wrap: balance;
 }
-.hero h1 em {
-    font-style: italic;
+.hero h1 em, p, span {
+    font-style: normal;
     color: var(--accent);
     font-weight: 500;
 }
 .hero p.lede {
-    font-size: 19px;
+    font-size: 16px;
     line-height: 1.55;
     color: var(--fg-muted);
     max-width: 560px;
@@ -537,7 +567,7 @@ button {
 }
 .section h2 em {
     color: var(--accent);
-    font-style: italic;
+    font-style: normal;
     font-weight: 500;
 }
 .section-head p {
@@ -843,7 +873,7 @@ button {
 }
 .cta-band h2 em {
     color: var(--accent);
-    font-style: italic;
+    font-style: normal;
 }
 .cta-band p {
     color: var(--fg-muted);
@@ -913,7 +943,7 @@ button {
    Docs layout
    ========================================================== */
 .docs-shell {
-    max-width: var(--maxw);
+    max-width: 1560px;
     margin: 0 auto;
     display: grid;
     grid-template-columns: 260px minmax(0, 1fr) 240px;
@@ -1013,7 +1043,7 @@ button {
     color: var(--accent);
 }
 .docs-body .lede {
-    font-size: 19px;
+    font-size: 17px;
     color: var(--fg-muted);
     margin: 0 0 40px;
     line-height: 1.55;
@@ -1098,7 +1128,6 @@ button {
     border-radius: 10px;
     margin: 20px 0;
     overflow: hidden;
-    max-width: 720px;
 }
 .codeblock-head {
     display: flex;
@@ -1205,7 +1234,6 @@ button {
     display: flex;
     justify-content: space-between;
     gap: 16px;
-    max-width: 720px;
 }
 .page-foot a {
     display: flex;

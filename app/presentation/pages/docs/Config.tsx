@@ -13,31 +13,53 @@ import {
 import { DocsSidebar } from "./DocsSidebar";
 import { SyntaxCodeBlock } from "./SyntaxCodeBlock";
 
-const configServiceExample = `import { ConfigService } from "@opticore/config";
-
-const config = new ConfigService();
-
-const port = config.get<number>("PORT", 3000);
-const dbUrl = config.getOrThrow<string>("DATABASE_URL");`;
-
-const envVarsExample = `import { getEnvironmentValue, IEnvVariables } from "opticore-env-access";
+const configServiceExample = `import { getEnvironmentValue } from "opticore-env-access";
 import { envPath } from "opticore-webapp";
 
-// All values are validated on startup — missing required vars throw
-const env: IEnvVariables = getEnvironmentValue(envPath);
+const env = getEnvironmentValue(envPath);
 
-// Typed access
-const port: number        = env.port;
-const locale: string      = env.defaultLocal;
-const dbHost: string      = env.databaseHost;`;
+console.log(env.appHost, env.appPort, env.dataBaseName);`;
+
+const envVarsExample = `interface IEnvVariables {
+    appHost: string;
+    appPort: string;
+    dataBaseHost: string;
+    dataBasePort: string;
+    dataBaseUser: string;
+    dataBasePassword: string;
+    dataBaseName: string;
+    defaultLocal: string;
+    apiVersion: string;
+    logLevelInfo: string;
+    logFileEnabled: boolean;
+    hmrEnabled: boolean;
+    hmrDebounceMs: number;
+    profileWebToolbar: boolean;
+}`;
 
 const yamlExample = `import { YamlParsing } from "opticore-webapp-core";
 
 const yaml = new YamlParsing(env.defaultLocal, envPath);
 
-// Load a structured YAML file as a typed object
-const corsOptions = yaml.readFile("config/cors/corsOptions.yaml");
-// { origin: ["https://app.example.com"], methods: ["GET","POST"], ... }`;
+const corsOptions = yaml.readFile(environment.corsOptions);`;
+
+const i18nExample = `import { translationLoaderConfig, translate } from "opticore-loader-translation";
+
+translationLoaderConfig({
+    packageName: "opticore-loader-translation",
+    locationTranslationFile: ["utils", "translations"],
+    localLang: "en",
+});
+
+translate({ key: "welcomeMessage", localeLanguage: "en", params: { name: "Guy" } });`;
+
+const i18nLowLevelExample = `import { TranslationLoader } from "opticore-translator";
+import path from "path";
+
+// Every message.translation.<locale>.json file in the directory is merged in memory
+TranslationLoader.loadTranslations(path.join("src", "utils", "translations"));
+
+const message = TranslationLoader.t("mongoServerError", "en", { dbHost: "127.0.0.1" });`;
 
 const TWEAK_DEFAULTS = { accent: "#f59042", theme: "dark", density: "comfortable" };
 
@@ -51,10 +73,11 @@ export function Config() {
         { id: "config-service", label: t.sb_config_service },
         { id: "env-vars", label: t.sb_env_vars },
         { id: "yaml", label: t.sb_yaml },
+        { id: "i18n", label: t.sb_i18n },
     ];
 
     useEffect(() => {
-        const ids = ["config-service", "env-vars", "yaml"];
+        const ids = ["config-service", "env-vars", "yaml", "i18n"];
         const obs = new IntersectionObserver(
             (entries) => {
                 const visible = entries
@@ -118,6 +141,15 @@ export function Config() {
                     </h2>
                     <p>{t.config_yaml_p}</p>
                     <SyntaxCodeBlock tabs={["yaml.ts"]} codes={[yamlExample]} />
+
+                    <h2 id="i18n" className="major">
+                        {t.config_i18n_h}
+                    </h2>
+                    <p>{t.config_i18n_p}</p>
+                    <SyntaxCodeBlock
+                        tabs={["opticore-loader-translation", "opticore-translator"]}
+                        codes={[i18nExample, i18nLowLevelExample]}
+                    />
 
                     <div className="page-foot">
                         <a href="/docs/helpers" style={{ textAlign: "left" }}>
