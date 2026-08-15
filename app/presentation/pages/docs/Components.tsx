@@ -146,6 +146,22 @@ export function Components() {
                     </h2>
                     <p>{t.comp_middlewares_p}</p>
                     <SyntaxCodeBlock tabs={["middlewares.ts"]} codes={[middlewaresExample]} />
+                    <ul>
+                        <li>
+                            <code>extends BaseMiddleware</code> — {t.comp_ex_mw_base}
+                        </li>
+                        <li>
+                            <code>req.headers["x-request-id"] ??= ...</code> —{" "}
+                            {t.comp_ex_mw_nullish}
+                        </li>
+                        <li>
+                            <code>gateway.addMiddleware(...)</code> — {t.comp_ex_mw_add}
+                        </li>
+                        <li>
+                            <code>new RateLimitMiddleware(100, 60000)</code> —{" "}
+                            {t.comp_ex_mw_ratelimit}
+                        </li>
+                    </ul>
 
                     <h2 id="interceptors" className="major">
                         {t.comp_interceptors_h}
@@ -155,18 +171,57 @@ export function Components() {
                         tabs={["requestCallsEvent.ts"]}
                         codes={[interceptorsExample]}
                     />
+                    <ul>
+                        <li>
+                            <code>server.on("request", ...)</code> — {t.comp_ex_int_onrequest}
+                        </li>
+                        <li>
+                            <code>requestCallsEvent(req, res, host, port, ts, envPath, "en")</code>{" "}
+                            — {t.comp_ex_int_args}
+                        </li>
+                    </ul>
 
                     <h2 id="guards" className="major">
                         {t.comp_guards_h}
                     </h2>
                     <p>{t.comp_guards_p}</p>
                     <SyntaxCodeBlock tabs={["invoice.router.ts"]} codes={[guardsExample]} />
+                    <ul>
+                        <li>
+                            <code>TAuthenticatorFunction&lt;ICustomContext&gt;</code> —{" "}
+                            {t.comp_ex_guard_type}
+                        </li>
+                        <li>
+                            <code>passport.authenticate("jwt", {"{"} session: false {"}"})</code>{" "}
+                            — {t.comp_ex_guard_passport}
+                        </li>
+                        <li>
+                            <code>routes(Controller, routes, jwtAuthenticator)</code> —{" "}
+                            {t.comp_ex_guard_thirdarg}
+                        </li>
+                    </ul>
 
                     <h2 id="exceptions" className="major">
                         {t.comp_exceptions_h}
                     </h2>
                     <p>{t.comp_exceptions_p}</p>
                     <SyntaxCodeBlock tabs={["errors.ts"]} codes={[exceptionsExample]} />
+                    <ul>
+                        <li>
+                            <code>new StackTraceError(message, name, status, isOperational)</code>{" "}
+                            — {t.comp_ex_err_stacktrace}
+                        </li>
+                        <li>
+                            <code>new ServerListenEventError("en")</code> — {t.comp_ex_err_listen}
+                        </li>
+                        <li>
+                            <code>event.uncaughtException / event.unhandledRejection</code> —{" "}
+                            {t.comp_ex_err_event}
+                        </li>
+                        <li>
+                            <code>(reason, promise) =&gt; ...</code> — {t.comp_ex_err_rejection}
+                        </li>
+                    </ul>
 
                     <div className="page-foot">
                         <a href="/docs/config" style={{ textAlign: "left" }}>

@@ -129,18 +129,58 @@ export function Config() {
                     </h2>
                     <p>{t.config_service_p}</p>
                     <SyntaxCodeBlock tabs={["config.service.ts"]} codes={[configServiceExample]} />
+                    <ul>
+                        <li>
+                            <code>getEnvironmentValue(envPath)</code> — {t.config_ex_service_get}
+                        </li>
+                        <li>
+                            <code>env.appHost / env.appPort / env.dataBaseName</code> —{" "}
+                            {t.config_ex_service_fields}
+                        </li>
+                    </ul>
 
                     <h2 id="env-vars" className="major">
                         {t.config_env_h}
                     </h2>
                     <p>{t.config_env_p}</p>
                     <SyntaxCodeBlock tabs={["env.ts"]} codes={[envVarsExample]} />
+                    <ul>
+                        <li>
+                            <code>appHost / appPort</code> — {t.config_ex_env_app}
+                        </li>
+                        <li>
+                            <code>dataBaseHost / ...Port / ...User / ...Password / ...Name</code>{" "}
+                            — {t.config_ex_env_db}
+                        </li>
+                        <li>
+                            <code>defaultLocal / apiVersion</code> — {t.config_ex_env_locale}
+                        </li>
+                        <li>
+                            <code>logLevelInfo / logFileEnabled</code> — {t.config_ex_env_log}
+                        </li>
+                        <li>
+                            <code>hmrEnabled / hmrDebounceMs</code> — {t.config_ex_env_hmr}
+                        </li>
+                        <li>
+                            <code>profileWebToolbar</code> — {t.config_ex_env_toolbar}
+                        </li>
+                    </ul>
 
                     <h2 id="yaml" className="major">
                         {t.config_yaml_h}
                     </h2>
                     <p>{t.config_yaml_p}</p>
                     <SyntaxCodeBlock tabs={["yaml.ts"]} codes={[yamlExample]} />
+                    <ul>
+                        <li>
+                            <code>new YamlParsing(env.defaultLocal, envPath)</code> —{" "}
+                            {t.config_ex_yaml_ctor}
+                        </li>
+                        <li>
+                            <code>yaml.readFile(environment.corsOptions)</code> —{" "}
+                            {t.config_ex_yaml_read}
+                        </li>
+                    </ul>
 
                     <h2 id="i18n" className="major">
                         {t.config_i18n_h}
@@ -150,6 +190,27 @@ export function Config() {
                         tabs={["opticore-loader-translation", "opticore-translator"]}
                         codes={[i18nExample, i18nLowLevelExample]}
                     />
+                    <ul>
+                        <li>
+                            <code>locationTranslationFile: ["utils", "translations"]</code> —{" "}
+                            {t.config_ex_i18n_location}
+                        </li>
+                        <li>
+                            <code>localLang: "en"</code> — {t.config_ex_i18n_locallang}
+                        </li>
+                        <li>
+                            <code>translate({"{"} key, localeLanguage, params {"}"})</code> —{" "}
+                            {t.config_ex_i18n_translate}
+                        </li>
+                        <li>
+                            <code>TranslationLoader.loadTranslations(dir)</code> —{" "}
+                            {t.config_ex_i18n_load}
+                        </li>
+                        <li>
+                            <code>TranslationLoader.t(key, locale, params)</code> —{" "}
+                            {t.config_ex_i18n_t}
+                        </li>
+                    </ul>
 
                     <div className="page-foot">
                         <a href="/docs/helpers" style={{ textAlign: "left" }}>

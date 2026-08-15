@@ -370,30 +370,80 @@ export function Features() {
                     </h2>
                     <p>{t.docs_first_module_p}</p>
                     <SyntaxCodeBlock tabs={["npx"]} codes={[scaffoldCmd]} lang="sh" />
+                    <ul>
+                        <li>
+                            <code>npx create-feature-module</code> — {t.feat_ex_scaffold}
+                        </li>
+                    </ul>
 
                     <p>{t.docs_presenter_p}</p>
                     <SyntaxCodeBlock
                         tabs={["cart.presenter.interface.ts"]}
                         codes={[cartPresenterInterface]}
                     />
+                    <ul>
+                        <li>
+                            <code>presentOne / presentMany / presentNotFound</code> —{" "}
+                            {t.feat_ex_presenter_methods}
+                        </li>
+                    </ul>
 
                     <p>{t.docs_repo_p}</p>
                     <SyntaxCodeBlock
                         tabs={["cart.repository.interface.ts"]}
                         codes={[cartRepositoryInterface]}
                     />
+                    <ul>
+                        <li>
+                            <code>findAll / findById / create / update / delete</code> —{" "}
+                            {t.feat_ex_repo_methods}
+                        </li>
+                    </ul>
 
                     <p>{t.docs_service_p}</p>
                     <SyntaxCodeBlock
                         tabs={["cart.service.interface.ts"]}
                         codes={[cartServiceInterface]}
                     />
+                    <ul>
+                        <li>
+                            <code>handleCreate / handleUpdate / handleDelete</code> —{" "}
+                            {t.feat_ex_service_methods}
+                        </li>
+                    </ul>
 
                     <p>{t.docs_dto_p}</p>
                     <SyntaxCodeBlock tabs={["cart.dto.ts"]} codes={[cartDto]} />
+                    <ul>
+                        <li>
+                            <code>CreateCartDto / UpdateCartDto</code> — {t.feat_ex_dto_input}
+                        </li>
+                        <li>
+                            <code>CartResponseDto</code> — {t.feat_ex_dto_response}
+                        </li>
+                        <li>
+                            <code>CartDtoMapper.toResponse(List)</code> — {t.feat_ex_dto_mapper}
+                        </li>
+                    </ul>
 
                     <p>{t.docs_use_case_p}</p>
                     <SyntaxCodeBlock tabs={["cart.use-case.ts"]} codes={[cartUseCase]} />
+                    <ul>
+                        <li>
+                            <code>constructor(private readonly repository)</code> —{" "}
+                            {t.feat_ex_uc_ctor}
+                        </li>
+                        <li>
+                            <code>crypto.randomUUID()</code> — {t.feat_ex_uc_uuid}
+                        </li>
+                        <li>
+                            <code>existing.updateName(dto.name) / existing.touch()</code> —{" "}
+                            {t.feat_ex_uc_update}
+                        </li>
+                        <li>
+                            <code>delete(id): Promise&lt;boolean&gt;</code> — {t.feat_ex_uc_delete}
+                        </li>
+                    </ul>
 
                     <h2 id="structure" className="major">
                         {t.docs_structure}
@@ -409,6 +459,20 @@ export function Features() {
                             structureCustom,
                         ]}
                     />
+                    <ul>
+                        <li>
+                            <code>Clean Arch</code> — {t.feat_ex_tree_clean}
+                        </li>
+                        <li>
+                            <code>Step by Step</code> — {t.feat_ex_tree_step}
+                        </li>
+                        <li>
+                            <code>Simple</code> — {t.feat_ex_tree_simple}
+                        </li>
+                        <li>
+                            <code>Custom</code> — {t.feat_ex_tree_custom}
+                        </li>
+                    </ul>
 
                     <div className="callout">
                         <Icon name="info" size={20} className="icon" />
@@ -425,6 +489,23 @@ export function Features() {
                     </h2>
                     <p>{t.docs_running_p}</p>
                     <SyntaxCodeBlock tabs={["main.ts"]} codes={[mainTs]} lang="ts" />
+                    <ul>
+                        <li>
+                            <code>YamlParsing / LocalLanguageLoader</code> — {t.feat_ex_main_yaml}
+                        </li>
+                        <li>
+                            <code>new WebServer({"{"} app, corsOriginOptions, ... {"}"})</code> —{" "}
+                            {t.feat_ex_main_webserver}
+                        </li>
+                        <li>
+                            <code>app.onStartServer(routes, driverFactory, deps)</code> —{" "}
+                            {t.feat_ex_main_onstart}
+                        </li>
+                        <li>
+                            <code>onListeningOnServerEvent / onRequestOnServerEvent</code> —{" "}
+                            {t.feat_ex_main_events}
+                        </li>
+                    </ul>
                     <p>
                         {t.docs_running_after_a}
                         <code>GET /cart</code>
@@ -436,26 +517,86 @@ export function Features() {
                     </h2>
                     <p>{t.feat_devtools_p}</p>
                     <SyntaxCodeBlock tabs={["shell"]} codes={[devtoolsCli]} lang="sh" />
+                    <ul>
+                        <li>
+                            <code>opticore-installer</code> — {t.feat_ex_devtools_installer}
+                        </li>
+                        <li>
+                            <code>create-feature-module</code> — {t.feat_ex_devtools_feature}
+                        </li>
+                        <li>
+                            <code>app-manager</code> — {t.feat_ex_devtools_manager}
+                        </li>
+                    </ul>
                     <p>{t.feat_devtools_p2}</p>
                     <SyntaxCodeBlock tabs={["server.ts"]} codes={[hotReloadExample]} lang="ts" />
+                    <ul>
+                        <li>
+                            <code>watchExtensions</code> — {t.feat_ex_hotreload_watch}
+                        </li>
+                        <li>
+                            <code>hotReloadExtensions</code> — {t.feat_ex_hotreload_hot}
+                        </li>
+                        <li>
+                            <code>debounceMs</code> — {t.feat_ex_hotreload_debounce}
+                        </li>
+                        <li>
+                            <code>hotReload.attach(server)</code> — {t.feat_ex_hotreload_attach}
+                        </li>
+                    </ul>
 
                     <h2 id="logger" className="major">
                         {t.feat_logger_h}
                     </h2>
                     <p>{t.feat_logger_p}</p>
                     <SyntaxCodeBlock tabs={["logger.ts"]} codes={[loggerExample]} />
+                    <ul>
+                        <li>
+                            <code>new LoggerCore(loggerConfig(envPath))</code> —{" "}
+                            {t.feat_ex_logger_core}
+                        </li>
+                        <li>
+                            <code>logger.info / warn / error({"{"} title, message {"}"})</code> —{" "}
+                            {t.feat_ex_logger_levels}
+                        </li>
+                    </ul>
 
                     <h2 id="environment" className="major">
                         {t.feat_env_h}
                     </h2>
                     <p>{t.feat_env_p}</p>
                     <SyntaxCodeBlock tabs={["env.ts"]} codes={[envExample]} />
+                    <ul>
+                        <li>
+                            <code>getEnvironmentValue(envPath)</code> — {t.feat_ex_env_get}
+                        </li>
+                        <li>
+                            <code>env.appPort / env.defaultLocal</code> — {t.feat_ex_env_typed}
+                        </li>
+                    </ul>
 
                     <h2 id="validation" className="major">
                         {t.feat_validation_h}
                     </h2>
                     <p>{t.feat_validation_p}</p>
                     <SyntaxCodeBlock tabs={["create-order.dto.ts"]} codes={[validationExample]} />
+                    <ul>
+                        <li>
+                            <code>schema: {"{"} field: [{"{"} rule, message {"}"}] {"}"}</code> —{" "}
+                            {t.feat_ex_val_schema}
+                        </li>
+                        <li>
+                            <code>{"{"} rule: "minLength", args: [8] {"}"}</code> —{" "}
+                            {t.feat_ex_val_args}
+                        </li>
+                        <li>
+                            <code>new Validator(schema).validate(req.body)</code> —{" "}
+                            {t.feat_ex_val_validate}
+                        </li>
+                        <li>
+                            <code>ResponseHandler.error(...)</code> — {t.feat_ex_val_response}
+                        </li>
+                    </ul>
 
                     <div className="page-foot">
                         <a href="/docs/core-concepts" style={{ textAlign: "left" }}>

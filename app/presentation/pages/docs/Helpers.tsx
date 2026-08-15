@@ -200,6 +200,18 @@ export function Helpers() {
                     </h2>
                     <p>{t.helpers_http_p}</p>
                     <SyntaxCodeBlock tabs={["invoice.controller.ts"]} codes={[httpExample]} />
+                    <ul>
+                        <li>
+                            <code>ResponseHandler.success / .error</code> — {t.helpers_ex_http_rh}
+                        </li>
+                        <li>
+                            <code>HttpStatusCode.NOT_FOUND / .OK / ...</code> —{" "}
+                            {t.helpers_ex_http_status}
+                        </li>
+                        <li>
+                            <code>try / catch</code> — {t.helpers_ex_http_catch}
+                        </li>
+                    </ul>
 
                     <h2 id="databases" className="major">
                         {t.sb_databases}
@@ -209,26 +221,105 @@ export function Helpers() {
                         tabs={["opticore-postgres", "opticore-mysqldb", "opticore-mongodb"]}
                         codes={[postgresExample, mysqlExample, mongoExample]}
                     />
+                    <ul>
+                        <li>
+                            <code>new PostgresCore(user, pass, host, port, "en", db)</code> —{" "}
+                            {t.helpers_ex_pg_ctor}
+                        </li>
+                        <li>
+                            <code>db.connection() / db.getConnection()</code> —{" "}
+                            {t.helpers_ex_pg_conn}
+                        </li>
+                        <li>
+                            <code>QueryBuilder("users").where(...).execute(sql)</code> —{" "}
+                            {t.helpers_ex_pg_query}
+                        </li>
+                        <li>
+                            <code>db.query({"{"} sql, values {"}"})</code> — {t.helpers_ex_mysql_query}
+                        </li>
+                        <li>
+                            <code>where("age", "gte", 18) / .sort({"{"} ... {"}"})</code> —{" "}
+                            {t.helpers_ex_mongo_ops}
+                        </li>
+                    </ul>
                     <p>{t.helpers_orm_p}</p>
                     <SyntaxCodeBlock tabs={["shell"]} codes={[ormOrchestratorExample]} lang="sh" />
+                    <ul>
+                        <li>
+                            <code>init</code> — {t.helpers_ex_orm_init}
+                        </li>
+                        <li>
+                            <code>make:model</code> — {t.helpers_ex_orm_make}
+                        </li>
+                        <li>
+                            <code>list</code> — {t.helpers_ex_orm_list}
+                        </li>
+                    </ul>
 
                     <h2 id="cache" className="major">
                         {t.sb_cache}
                     </h2>
                     <p>{t.helpers_redis_p}</p>
                     <SyntaxCodeBlock tabs={["cache.ts"]} codes={[cacheExample]} />
+                    <ul>
+                        <li>
+                            <code>storageType: "memory" | "disk" | "hybrid"</code> —{" "}
+                            {t.helpers_ex_cache_storage}
+                        </li>
+                        <li>
+                            <code>defaultTTL / maxSize</code> — {t.helpers_ex_cache_ttl}
+                        </li>
+                        <li>
+                            <code>getWithCache(url)</code> — {t.helpers_ex_cache_get}
+                        </li>
+                        <li>
+                            <code>_metadata.source</code> — {t.helpers_ex_cache_meta}
+                        </li>
+                        <li>
+                            <code>invalidateCache("/posts/*")</code> — {t.helpers_ex_cache_invalidate}
+                        </li>
+                    </ul>
 
                     <h2 id="gateway" className="major">
                         {t.sb_gateway}
                     </h2>
                     <p>{t.helpers_queue_p}</p>
                     <SyntaxCodeBlock tabs={["gateway.ts"]} codes={[gatewayExample]} />
+                    <ul>
+                        <li>
+                            <code>loadBalancer: "round-robin"</code> — {t.helpers_ex_gw_lb}
+                        </li>
+                        <li>
+                            <code>services: [{"{"} name, url, healthCheck {"}"}]</code> —{" "}
+                            {t.helpers_ex_gw_services}
+                        </li>
+                        <li>
+                            <code>routes[].middlewares</code> — {t.helpers_ex_gw_middlewares}
+                        </li>
+                        <li>
+                            <code>circuitBreaker: {"{"} failureThreshold, resetTimeout {"}"}</code>{" "}
+                            — {t.helpers_ex_gw_breaker}
+                        </li>
+                    </ul>
 
                     <h2 id="security" className="major">
                         {t.sb_security}
                     </h2>
                     <p>{t.helpers_security_p}</p>
                     <SyntaxCodeBlock tabs={["sign.ts"]} codes={[securityExample]} />
+                    <ul>
+                        <li>
+                            <code>loaderTranslationFile("en")</code> — {t.helpers_ex_sec_loader}
+                        </li>
+                        <li>
+                            <code>new SAsymmetricCryptionDataWithPublicRSAKey("en", ".env")</code>{" "}
+                            — {t.helpers_ex_sec_ctor}
+                        </li>
+                        <li>
+                            <code>verifyPublicRSAKey(privateKey, publicKey, payload)</code> —{" "}
+                            {t.helpers_ex_sec_verify}
+                        </li>
+                    </ul>
 
                     <div className="page-foot">
                         <a href="/docs/features" style={{ textAlign: "left" }}>

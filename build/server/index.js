@@ -5163,7 +5163,6 @@ import { requestCallsEvent } from "opticore-request-call-event";
 
 const server = http.createServer(app);
 
-// Instruments every request/response cycle: method, status, timing, colorized console output
 server.on("request", (req, res) => {
     requestCallsEvent(req, res, "localhost", 3000, Date.now(), envPath, "en");
 });`;
@@ -5183,7 +5182,7 @@ export const InvoiceRouter = OpticoreRoutingFactory.routes(
             handler: (ctx: ICustomContext) => InvoiceController.create(ctx.req, ctx.res),
         },
     ],
-    jwtAuthenticator // every route in this collection now requires a valid JWT
+    jwtAuthenticator
 );`;
 var exceptionsExample = `import process from "node:process";
 import { StackTraceError, ServerListenEventError, CEvent as event } from "opticore-catch-exception-error";
@@ -5194,7 +5193,7 @@ throw new StackTraceError(
     "Could not connect to the database",
     "DatabaseConnectionError",
     HttpStatusCode.UNAUTHORIZED,
-    true // isOperational
+    true
 );
 
 // 2. Process-wide safety net, wired once at boot
@@ -5624,7 +5623,7 @@ var server_manifest_default = {
 			"hasClientMiddleware": false,
 			"hasDefaultExport": true,
 			"hasErrorBoundary": false,
-			"module": "/assets/docs.components-TG3iUo21.js",
+			"module": "/assets/docs.components-BMy2UJbN.js",
 			"imports": [
 				"/assets/jsx-runtime-DcGadwfq.js",
 				"/assets/TweaksPanel-D7BLbKnh.js",
@@ -5637,8 +5636,8 @@ var server_manifest_default = {
 			"hydrateFallbackModule": void 0
 		}
 	},
-	"url": "/assets/manifest-b4a85c87.js",
-	"version": "b4a85c87",
+	"url": "/assets/manifest-c1488f89.js",
+	"version": "c1488f89",
 	"sri": void 0
 };
 //#endregion

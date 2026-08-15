@@ -60,14 +60,14 @@ export class InvoiceUseCase {
   }
 }`;
 
-const portExample = `
-export interface IInvoiceRepository {
+const portInterfaceExample = `export interface IInvoiceRepository {
   findAll(): Promise<InvoiceEntity[]>;
   findById(id: string): Promise<InvoiceEntity | null>;
   create(entity: InvoiceEntity): Promise<InvoiceEntity>;
-}
+}`;
 
-import { QueryBuilder, Sql } from "opticore-postgres";
+const portImplExample = `import { QueryBuilder, Sql } from "opticore-postgres";
+import { IInvoiceRepository } from "../ports/repositories/invoice.repository.interface";
 
 export class InvoiceRepository implements IInvoiceRepository {
   constructor(private readonly sql: Sql) {}
@@ -84,6 +84,11 @@ export class InvoiceRepository implements IInvoiceRepository {
         .where("id", id)
         .first(this.sql);
     return row ? new InvoiceEntity(row.id, row.amount, row.updatedAt) : null;
+  }
+
+  async create(entity: InvoiceEntity): Promise<InvoiceEntity> {
+    await new QueryBuilder("invoices").insert(entity).execute(this.sql);
+    return entity;
   }
 }`;
 
@@ -204,12 +209,44 @@ export function CoreConcepts() {
                     </h2>
                     <p>{t.cc_entities_p}</p>
                     <SyntaxCodeBlock tabs={["invoice.entity.ts"]} codes={[entityExample]} />
+                    <ul>
+                        <li>
+                            <code>_id / _amount / _updatedAt</code> — {t.cc_entities_ex_fields}
+                        </li>
+                        <li>
+                            <code>constructor(id, amount, updatedAt)</code> — {t.cc_entities_ex_ctor}
+                        </li>
+                        <li>
+                            <code>get id() / get amount()</code> — {t.cc_entities_ex_getters}
+                        </li>
+                        <li>
+                            <code>touch()</code> — {t.cc_entities_ex_touch}
+                        </li>
+                        <li>
+                            <code>validate()</code> — {t.cc_entities_ex_validate}
+                        </li>
+                    </ul>
 
                     <h2 id="use-cases" className="major">
                         {t.cc_uc_h}
                     </h2>
                     <p>{t.cc_uc_p}</p>
                     <SyntaxCodeBlock tabs={["invoice.usecase.ts"]} codes={[useCaseExample]} />
+                    <ul>
+                        <li>
+                            <code>IInvoiceRepository</code> — {t.cc_uc_ex_port}
+                        </li>
+                        <li>
+                            <code>constructor(private readonly repository)</code> —{" "}
+                            {t.cc_uc_ex_ctor}
+                        </li>
+                        <li>
+                            <code>findAll() / findById(id)</code> — {t.cc_uc_ex_methods}
+                        </li>
+                        <li>
+                            <code>InvoiceDtoMapper</code> — {t.cc_uc_ex_mapper}
+                        </li>
+                    </ul>
 
                     <h2 id="ports" className="major">
                         {t.cc_ports_h}
@@ -217,8 +254,32 @@ export function CoreConcepts() {
                     <p>{t.cc_ports_p}</p>
                     <SyntaxCodeBlock
                         tabs={["invoice.repository.interface.ts", "invoice.repository.ts"]}
-                        codes={[portExample, portExample]}
+                        codes={[portInterfaceExample, portImplExample]}
                     />
+                    <ul>
+                        <li>
+                            <code>interface IInvoiceRepository</code> — {t.cc_ports_ex_iface}
+                        </li>
+                        <li>
+                            <code>findAll() / findById() / create()</code> —{" "}
+                            {t.cc_ports_ex_methods}
+                        </li>
+                        <li>
+                            <code>implements IInvoiceRepository</code> — {t.cc_ports_ex_impl}
+                        </li>
+                        <li>
+                            <code>constructor(private readonly sql: Sql)</code> —{" "}
+                            {t.cc_ports_ex_ctor}
+                        </li>
+                        <li>
+                            <code>new QueryBuilder(...).execute(this.sql)</code> —{" "}
+                            {t.cc_ports_ex_query}
+                        </li>
+                        <li>
+                            <code>new InvoiceEntity(r.id, r.amount, r.updatedAt)</code> —{" "}
+                            {t.cc_ports_ex_map}
+                        </li>
+                    </ul>
 
                     <h2 id="routing" className="major">
                         {t.cc_routing_h}
@@ -228,12 +289,55 @@ export function CoreConcepts() {
                         tabs={["invoice.router.handler.ts"]}
                         codes={[routingExample]}
                     />
+                    <ul>
+                        <li>
+                            <code>OpticoreRoutingFactory.routes(Controller, [...])</code> —{" "}
+                            {t.cc_routing_ex_factory}
+                        </li>
+                        <li>
+                            <code>path / method / middlewares / handler</code> —{" "}
+                            {t.cc_routing_ex_fields}
+                        </li>
+                        <li>
+                            <code>(ctx: ICustomContext) =&gt; ...</code> — {t.cc_routing_ex_ctx}
+                        </li>
+                        <li>
+                            <code>IMultipleRouteDefinition</code> — {t.cc_routing_ex_type}
+                        </li>
+                        <li>
+                            <code>TFeatureRoutes</code> — {t.cc_routing_ex_feature}
+                        </li>
+                    </ul>
 
                     <h2 id="di" className="major">
                         {t.cc_di_h}
                     </h2>
                     <p>{t.cc_di_p}</p>
                     <SyntaxCodeBlock tabs={["container.ts"]} codes={[diExample]} />
+                    <ul>
+                        <li>
+                            <code>new SContainer("en", [...])</code> — {t.cc_di_ex_lang}
+                        </li>
+                        <li>
+                            <code>key</code> — {t.cc_di_ex_key}
+                        </li>
+                        <li>
+                            <code>factory</code> — {t.cc_di_ex_factory}
+                        </li>
+                        <li>
+                            <code>scope: "singleton"</code> — {t.cc_di_ex_scope}
+                        </li>
+                        <li>
+                            <code>c?.resolve("InvoiceRepository")</code> — {t.cc_di_ex_resolve}
+                        </li>
+                        <li>
+                            <code>container.getService&lt;T&gt;("Key")</code> —{" "}
+                            {t.cc_di_ex_getservice}
+                        </li>
+                        <li>
+                            <code>container.listDependencies()</code> — {t.cc_di_ex_list}
+                        </li>
+                    </ul>
 
                     <div className="callout">
                         <Icon name="info" size={20} className="icon" />
